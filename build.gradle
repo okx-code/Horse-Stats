@@ -30,7 +30,7 @@ repositories {
 }
 apply plugin: 'de.undercouch.download'
 
-version = "1.12.2-1.3.0"
+version = "1.12.2-1.3.1"
 group= "com.gmail.nuclearcat1337.horse_stats" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "HorseStats"
 
