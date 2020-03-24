@@ -18,6 +18,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.io.File;
@@ -158,8 +159,15 @@ public class HorseStats {
         //and F3 not pressed
         //if ((mc.inGameHasFocus || mc.currentScreen == null || mc.currentScreen instanceof GuiChat) && !mc.gameSettings.showDebugInfo)
         if ((mc.inGameHasFocus || mc.currentScreen == null || mc.currentScreen instanceof GuiChat)) {
-            if (mc.player.isRidingHorse() && mc.player.getRidingEntity() == horse)
-                return;    //don't render stats of the horse/animal we are currently riding
+            if (mc.player.isRidingHorse() && mc.player.getRidingEntity() == horse) {
+                if (settings.renderWhileRiding) {
+                    // if this is not constant it glitches on horseback
+                    partialTickTime = 1;
+                } else {
+                    //don't render stats of the horse/animal we are currently riding
+                    return;
+                }
+            }
 
             //only show entities that are close by
             double distanceFromMe = mc.player.getDistanceSq(horse);

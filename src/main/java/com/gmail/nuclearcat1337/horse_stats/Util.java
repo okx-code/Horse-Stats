@@ -4,8 +4,6 @@ import java.text.DecimalFormat;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.passive.AbstractHorse;
-import net.minecraft.entity.passive.EntityAnimal;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 /**
  * Created by Mr_Little_Kitty on 1/10/2017.
@@ -34,17 +32,8 @@ public class Util {
      * @return e.x. 1.2?-5.5?
      */
     public static float GetHorseMaxJump(AbstractHorse horse) {
-        /*//simulate gravity and air resistance to determine the jump height
-        double yVelocity = horse.getHorseJumpStrength();    //horses's jump strength attribute
-        double jumpHeight = 0;
-        while (yVelocity > 0) {
-            jumpHeight += yVelocity;
-            yVelocity -= 0.08;
-            yVelocity *= 0.98;
-        }
-        return (float) jumpHeight;*/
         double x = horse.getHorseJumpStrength();
-        return (float) (-0.1817584952 * Math.pow(x, 3) + 3.689713992 * Math.pow(x, 2) + 2.128599134 * x - 0.343930367);
+        return (float) (-0.1817584952 * x*x*x + 3.689713992 * x*x + 2.128599134 * x - 0.343930367);
     }
 
     /**
@@ -54,7 +43,7 @@ public class Util {
      * @return e.x. Steve = 4.3 m/s. Horses ~7-13
      */
     public static float GetEntityMaxSpeed(EntityLivingBase entity) {
-        return (float) entity.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue() * 43.17f;
+        return (float) entity.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue() * 42.15778758471F;
     }
 
     /**
