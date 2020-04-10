@@ -55,15 +55,4 @@ public class Util {
     public static int GetEntityMaxHP(EntityLivingBase entity) {
         return (int) entity.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getAttributeValue() + 1;
     }
-
-    /**
-     * Gets the baby horses age ranging from 0 to 100.
-     *
-     * @param horse
-     * @return
-     */
-    public static int GetHorseBabyGrowingAgeAsPercent(AbstractHorse horse) {
-        float horseGrowingAge = horse.getHorseSize();    //horse size ranges from 0.5 to 1
-        return (int) ((horseGrowingAge - 0.5f) * 2.0f * 100f);
-    }
 }

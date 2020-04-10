@@ -7,6 +7,7 @@ import net.minecraft.client.gui.*;
 
 import java.text.DecimalFormat;
 import net.minecraft.client.gui.GuiSlider.FormatHelper;
+import net.minecraftforge.fml.client.config.GuiCheckBox;
 
 /**
  * Created by Mr_Little_Kitty on 1/10/2017.
@@ -14,22 +15,15 @@ import net.minecraft.client.gui.GuiSlider.FormatHelper;
 public class GuiHorseStats extends GuiScreen {
     private static final int BUTTON_WIDTH = GuiConstants.SMALL_BUTTON_WIDTH * 3;
 
-    private static final String HEALTH_STRING = "Horse Health";
-    private static final String JUMP_STRING = "Horse Jump";
-    private static final String SPEED_STRING = "Horse Speed";
-
-    private final int healthWidth, jumpWidth, speedWidth;
 
     private final HorseStats horseStats;
 
+    private GuiCheckBox toggleJump;
+    private GuiCheckBox toggleHealth;
+    private GuiCheckBox toggleSpeed;
+
     public GuiHorseStats(HorseStats stats) {
         this.horseStats = stats;
-
-        Minecraft mc = Minecraft.getMinecraft();
-
-        healthWidth = mc.fontRenderer.getStringWidth(HEALTH_STRING);
-        jumpWidth = mc.fontRenderer.getStringWidth(JUMP_STRING);
-        speedWidth = mc.fontRenderer.getStringWidth(SPEED_STRING);
     }
 
     @Override
@@ -41,32 +35,50 @@ public class GuiHorseStats extends GuiScreen {
         int buttonYPos1 = yPos + GuiConstants.STANDARD_BUTTON_HEIGHT * 3 + GuiConstants.STANDARD_SEPARATION_DISTANCE * 3;
         int buttonYPos2 = buttonYPos1 + GuiConstants.STANDARD_BUTTON_HEIGHT + GuiConstants.STANDARD_SEPARATION_DISTANCE;
 
-        layoutThresholdButtons(xPos, yPos, horseStats.getJumpThreshold(), "Jump", 2, 5.3f, 0.1f, new DecimalFormat("#.0"));
+        toggleJump = layoutThresholdButtons(xPos, yPos, horseStats.getJumpThreshold(), "Jump", 2, 5.3f, 0.1f, new DecimalFormat("#.0"), horseStats.getSettings().showJump);
 
-        buttonList.add(new GuiSnappySlider(renderDistanceResponder, 10, xPos, buttonYPos1, new SliderOption("Render Distance", 0, 30, 1), horseStats.getRenderDistance(), renderDistanceFormatter));
-//        buttonList.add(new GuiButton(0, xPos, buttonYPos2, BUTTON_WIDTH, GuiConstants.STANDARD_BUTTON_HEIGHT, "Overlay Render: " + (horseStats.shouldRenderStats() ? "On" : "Off")));
+        buttonList.add(new GuiSnappySlider(renderDistanceResponder, 10, xPos, buttonYPos1, new SliderOption("Render Distance", 0, 50, 1), horseStats.getRenderDistance(), renderDistanceFormatter));
 
         xPos += BUTTON_WIDTH + GuiConstants.STANDARD_SEPARATION_DISTANCE * 2;
 
-        layoutThresholdButtons(xPos, yPos, horseStats.getHealthThreshold(), "Health", 18, 31, 1, new DecimalFormat("#"));
+        toggleHealth = layoutThresholdButtons(xPos, yPos, horseStats.getHealthThreshold(), "Health", 18, 31, 1, new DecimalFormat("#"), horseStats.getSettings().showHealth);
 
         buttonList.add(new GuiSnappySlider(decimalPlacesResponder, 11, xPos, buttonYPos1, new SliderOption("Decimal Places", 0, 7, 1), horseStats.getDecimalPlaces(), decimalPlacesFormatter));
         buttonList.add(new GuiButton(1, xPos, buttonYPos2, BUTTON_WIDTH, GuiConstants.STANDARD_BUTTON_HEIGHT, "Done"));
 
         xPos += BUTTON_WIDTH + GuiConstants.STANDARD_SEPARATION_DISTANCE * 2;
 
-        layoutThresholdButtons(xPos, yPos, horseStats.getSpeedThreshold(), "Speed", 8, 14.3F, 0.05F, new DecimalFormat("#.00"));
+        toggleSpeed = layoutThresholdButtons(xPos, yPos, horseStats.getSpeedThreshold(), "Speed", 8, 14.3F, 0.05F, new DecimalFormat("#.00"), horseStats.getSettings().showSpeed);
 
         buttonList.add(new GuiToggleButton<>(showRidingResponder, 12, xPos, buttonYPos1, horseStats.getSettings().renderWhileRiding, "Show Riding", showRidingFormatter));
 
         super.initGui();
     }
 
+    private GuiCheckBox layoutThresholdButtons(int xPos, int yPos, Threshold threshold, String name, float min, float max, float step, DecimalFormat df, boolean show) {
+        GuiCheckBox box = new GuiCheckBox(6, xPos, yPos - GuiConstants.STANDARD_BUTTON_HEIGHT / 2 - mc.fontRenderer.FONT_HEIGHT / 2,"Horse " + name, show);
+
+        DecimalFormatHelper helper = new DecimalFormatHelper(df);
+        GuiSnappySlider greatSlider = new GuiSnappySlider(new ThresholdRunnable(threshold, true), 7, xPos, yPos, new SliderOption(name + " Great", min, max, step), threshold.getGreat(), helper);
+        greatSlider.width = BUTTON_WIDTH;
+
+        yPos += greatSlider.height + GuiConstants.STANDARD_SEPARATION_DISTANCE;
+
+        GuiSnappySlider averageSlider = new GuiSnappySlider(new ThresholdRunnable(threshold, false), 8, xPos, yPos, new SliderOption(name + " Avg", min, max, step), threshold.getAverage(), helper);
+        averageSlider.width = BUTTON_WIDTH;
+
+        buttonList.add(box);
+        buttonList.add(greatSlider);
+        buttonList.add(averageSlider);
+
+        return box;
+    }
+
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
 
-        int xPos = (this.width / 2) - (BUTTON_WIDTH / 2) - (GuiConstants.STANDARD_SEPARATION_DISTANCE * 2) - BUTTON_WIDTH;
+        /*int xPos = (this.width / 2) - (BUTTON_WIDTH / 2) - (GuiConstants.STANDARD_SEPARATION_DISTANCE * 2) - BUTTON_WIDTH;
         int yPos = (this.height / 2) - (GuiConstants.STANDARD_BUTTON_HEIGHT / 2) - GuiConstants.STANDARD_SEPARATION_DISTANCE - GuiConstants.STANDARD_BUTTON_HEIGHT * 2; //the last *2 is so that the buttons are higher up
 
         mc.fontRenderer.drawString(JUMP_STRING, xPos + BUTTON_WIDTH / 2 - jumpWidth / 2, yPos - GuiConstants.STANDARD_BUTTON_HEIGHT / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 16777215);
@@ -77,7 +89,7 @@ public class GuiHorseStats extends GuiScreen {
 
         xPos += BUTTON_WIDTH + GuiConstants.STANDARD_SEPARATION_DISTANCE * 2;
 
-        mc.fontRenderer.drawString(SPEED_STRING, xPos + BUTTON_WIDTH / 2 - speedWidth / 2, yPos - GuiConstants.STANDARD_BUTTON_HEIGHT / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 16777215);
+        mc.fontRenderer.drawString(SPEED_STRING, xPos + BUTTON_WIDTH / 2 - speedWidth / 2, yPos - GuiConstants.STANDARD_BUTTON_HEIGHT / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 16777215);*/
     }
 
     @Override
@@ -106,6 +118,10 @@ public class GuiHorseStats extends GuiScreen {
 
     @Override
     public void onGuiClosed() {
+        horseStats.getSettings().showHealth = toggleHealth.isChecked();
+        horseStats.getSettings().showJump = toggleJump.isChecked();
+        horseStats.getSettings().showSpeed = toggleSpeed.isChecked();
+
         horseStats.saveSettings();
     }
 
@@ -182,32 +198,18 @@ public class GuiHorseStats extends GuiScreen {
             return name + ": " + render;
         }
     };
-
     class DecimalFormatHelper implements FormatHelper {
+
         private final DecimalFormat format;
 
         DecimalFormatHelper(DecimalFormat format) {
             this.format = format;
         }
-
         @Override
         public String getText(int id, String name, float value) {
             return name + ": " + format.format(value);
         }
-    }
 
-    private void layoutThresholdButtons(int xPos, int yPos, Threshold threshold, String name, float min, float max, float step, DecimalFormat df) {
-        DecimalFormatHelper helper = new DecimalFormatHelper(df);
-        GuiSnappySlider greatSlider = new GuiSnappySlider(new ThresholdRunnable(threshold, true), 7, xPos, yPos, new SliderOption(name + " Great", min, max, step), threshold.getGreat(), helper);
-        greatSlider.width = BUTTON_WIDTH;
-
-        yPos += greatSlider.height + GuiConstants.STANDARD_SEPARATION_DISTANCE;
-
-        GuiSnappySlider averageSlider = new GuiSnappySlider(new ThresholdRunnable(threshold, false), 8, xPos, yPos, new SliderOption(name + " Avg", min, max, step), threshold.getAverage(), helper);
-        averageSlider.width = BUTTON_WIDTH;
-
-        buttonList.add(greatSlider);
-        buttonList.add(averageSlider);
     }
 
     private static class ThresholdRunnable implements GuiPageButtonList.GuiResponder {

@@ -1,6 +1,9 @@
 package com.gmail.nuclearcat1337.horse_stats;
 
 public class Settings {
+    public boolean showJump = true;
+    public boolean showHealth = true;
+    public boolean showSpeed = true;
 
     public Threshold jumpThreshold = new Threshold(3, 4);
     public Threshold speedThreshold = new Threshold(11, 13);

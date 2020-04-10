@@ -3,6 +3,8 @@ package com.gmail.nuclearcat1337.horse_stats;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -156,9 +158,8 @@ public class HorseStats {
     private void RenderHorseInfoInWorld(AbstractHorse horse, float partialTickTime) {
         //if the player is in the world
         //and not looking at a menu
-        //and F3 not pressed
-        //if ((mc.inGameHasFocus || mc.currentScreen == null || mc.currentScreen instanceof GuiChat) && !mc.gameSettings.showDebugInfo)
-        if ((mc.inGameHasFocus || mc.currentScreen == null || mc.currentScreen instanceof GuiChat)) {
+        //and F1 not pressed
+        if ((mc.inGameHasFocus || mc.currentScreen == null || mc.currentScreen instanceof GuiChat) && !mc.gameSettings.hideGUI) {
             if (mc.player.isRidingHorse() && mc.player.getRidingEntity() == horse) {
                 if (settings.renderWhileRiding) {
                     // if this is not constant it glitches on horseback
@@ -184,22 +185,26 @@ public class HorseStats {
         float y = (float) horse.posY;
         float z = (float) horse.posZ;
 
-        //a positive value means the horse has bred recently
-        int animalGrowingAge = horse.getGrowingAge();
+        List<String> overlayText = new ArrayList<>(3);
 
-        String[] overlayText = new String[animalGrowingAge < 0 ? 4 : 3];
-
-        overlayText[0] = (getSpeedThreshold().format(decimalFormat, Util.GetEntityMaxSpeed(horse)) + " m/s");
-        overlayText[1] = (getHealthThreshold().format(decimalFormat, Util.GetEntityMaxHP(horse)) + " hp");
-        overlayText[2] = (getJumpThreshold().format(decimalFormat, Util.GetHorseMaxJump(horse)) + " jump");
-
-        if (animalGrowingAge < 0)
-            overlayText[3] = (Util.GetHorseBabyGrowingAgeAsPercent(horse) + "%");
+        if (settings.showSpeed) {
+            overlayText.add(getSpeedThreshold().format(decimalFormat, Util.GetEntityMaxSpeed(horse)) + " m/s");
+        }
+        if (settings.showHealth) {
+            overlayText.add(getHealthThreshold().format(decimalFormat, Util.GetEntityMaxHP(horse)) + " hp");
+        }
+        if (settings.showJump) {
+            overlayText.add(getJumpThreshold().format(decimalFormat, Util.GetHorseMaxJump(horse)) + " jump");
+        }
 
         RenderFloatingText(overlayText, x, y + 1.3f, z, 0xFFFFFF, true, partialTickTime);
     }
 
-    public void RenderFloatingText(String[] text, float x, float y, float z, int color, boolean renderBlackBackground, float partialTickTime) {
+    public void RenderFloatingText(List<String> text, float x, float y, float z, int color, boolean renderBlackBackground, float partialTickTime) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+
         //Thanks to Electric-Expansion mod for the majority of this code
         //https://github.com/Alex-hawks/Electric-Expansion/blob/master/src/electricexpansion/client/render/RenderFloatingText.java
 
@@ -236,7 +241,7 @@ public class HorseStats {
         }
 
         int lineHeight = 10;
-        int initialValue = lineHeight * text.length;
+        int initialValue = lineHeight * text.size();
 
         if (renderBlackBackground) {
             int stringMiddle = textWidth / 2;
@@ -249,8 +254,8 @@ public class HorseStats {
             //This code taken from 1.8.8 net.minecraft.client.renderer.entity.Render.renderLivingLabel()
             vertexBuffer.begin(7, DefaultVertexFormats.POSITION_COLOR);
             vertexBuffer.pos((double) (-stringMiddle - 1), (double) (-1) - initialValue, 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
-            vertexBuffer.pos((double) (-stringMiddle - 1), (double) (8 + lineHeight * (text.length - 1)) - initialValue, 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
-            vertexBuffer.pos((double) (stringMiddle + 1), (double) (8 + lineHeight * (text.length - 1)) - initialValue, 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
+            vertexBuffer.pos((double) (-stringMiddle - 1), (double) (8 + lineHeight * (text.size() - 1)) - initialValue, 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
+            vertexBuffer.pos((double) (stringMiddle + 1), (double) (8 + lineHeight * (text.size() - 1)) - initialValue, 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
             vertexBuffer.pos((double) (stringMiddle + 1), (double) (-1) - initialValue, 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
 
             tessellator.draw();

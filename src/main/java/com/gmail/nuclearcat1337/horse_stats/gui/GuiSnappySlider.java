@@ -6,10 +6,11 @@ import net.minecraft.client.gui.GuiPageButtonList;
 import net.minecraft.client.gui.GuiSlider;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-@SideOnly(Side.CLIENT)
+/**
+ * This is a nice little slider that will snap to the step values. It's like GuiOptionSlider,
+ * except it doesn't have to be an internal Minecraft option.
+ */
 public class GuiSnappySlider extends GuiButton {
 
   private float sliderValue;
