@@ -37,7 +37,7 @@ public class GuiHorseStats extends GuiScreen {
 
         toggleJump = layoutThresholdButtons(xPos, yPos, horseStats.getJumpThreshold(), "Jump", 2, 5.3f, 0.1f, new DecimalFormat("#.0"), horseStats.getSettings().showJump);
 
-        buttonList.add(new GuiSnappySlider(renderDistanceResponder, 10, xPos, buttonYPos1, new SliderOption("Render Distance", 0, 50, 1), horseStats.getRenderDistance(), renderDistanceFormatter));
+        buttonList.add(new GuiSnappySlider(renderDistanceResponder, 10, xPos, buttonYPos1, new SliderOption("Max Distance", 0, 50, 1), horseStats.getRenderDistance(), renderDistanceFormatter));
 
         xPos += BUTTON_WIDTH + GuiConstants.STANDARD_SEPARATION_DISTANCE * 2;
 
